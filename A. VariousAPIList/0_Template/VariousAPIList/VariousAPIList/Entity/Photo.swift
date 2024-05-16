@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Photo: Codable {
+struct Photo: Codable, Hashable {
     var albumId: Int64
     var id: Int64
     var title: String

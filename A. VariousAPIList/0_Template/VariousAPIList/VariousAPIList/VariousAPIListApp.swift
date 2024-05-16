@@ -1,10 +1,3 @@
-//
-//  VariousAPIListApp.swift
-//  VariousAPIList
-//
-//  Created by Kentaro Terasaki on 2024/05/10.
-//
-
 import SwiftUI
 
 enum AppPath {
@@ -31,9 +24,9 @@ struct VariousAPIListApp: App {
     func destination(_ appPath: AppPath) -> some View {
         switch appPath {
         case .album:
-            AlbumListPageView()
+            AlbumListPageView(viewModel: .init())
         case .photo:
-            PhotoListPageView()
+            PhotoListPageView(viewModel: .init())
         }
     }
 }
