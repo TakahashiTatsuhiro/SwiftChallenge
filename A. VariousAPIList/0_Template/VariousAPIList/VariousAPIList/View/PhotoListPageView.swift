@@ -58,7 +58,11 @@ struct PhotoView : View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            AsyncImage(url: photo.url)
+            AsyncImage(url: photo.url){ image in
+                image.resizable()
+            } placeholder: {
+                ProgressView()
+            }
             Text("id: \(photo.id)")
             Text("albumId: \(photo.albumId)")
             Text("title: \(photo.title)")
