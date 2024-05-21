@@ -21,13 +21,20 @@ extension AlbumListPageView {
         @Published var albumList: AlbumList = []
         
         init() {
-            fetchAlbum { _returnVal, _error in
+//            fetchAlbum { _returnVal, _error in
+//                if let returnVal = _returnVal {
+//                    self.albumList = returnVal
+//                } else if let error = _error {
+//                    print(error)
+//                }
+//            }
+            fetchAlbumAPIClient(completion: { _returnVal, _error in
                 if let returnVal = _returnVal {
                     self.albumList = returnVal
                 } else if let error = _error {
                     print(error)
                 }
-            }
+            })
         }
         
         func fetchAlbum(completion: @escaping (AlbumList?, Error?) -> Void) {
@@ -48,8 +55,13 @@ extension AlbumListPageView {
                     }
                 }
             }
-            
             task.resume()
+        }
+        
+        func fetchAlbumAPIClient(completion: @escaping (AlbumList?, Error?) -> Void) {
+            let getAlbumRequest = GetAlbumsRequest(method: HttpMethod.GET)
+            let apiClient = APIClientImpl()
+            apiClient.executeWithCompletion(getAlbumRequest, completion: completion)
         }
     }
 }

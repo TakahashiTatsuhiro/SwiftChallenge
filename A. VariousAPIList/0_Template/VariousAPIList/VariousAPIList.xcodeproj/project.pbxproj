@@ -18,6 +18,7 @@
 		8C4C06E62BED987A00A59916 /* Album.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C4C06E32BED987A00A59916 /* Album.swift */; };
 		8C4C06E72BED987A00A59916 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C4C06E42BED987A00A59916 /* Photo.swift */; };
 		8C4C06E92BED9F6D00A59916 /* VariousAPIListApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C4C06E82BED9F6D00A59916 /* VariousAPIListApp.swift */; };
+		CE6CB1A72BFCC38300B63F72 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6CB1A62BFCC38300B63F72 /* APIClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +54,7 @@
 		8C4C06E32BED987A00A59916 /* Album.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Album.swift; sourceTree = "<group>"; };
 		8C4C06E42BED987A00A59916 /* Photo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		8C4C06E82BED9F6D00A59916 /* VariousAPIListApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariousAPIListApp.swift; sourceTree = "<group>"; };
+		CE6CB1A62BFCC38300B63F72 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +105,7 @@
 		8C4C06AE2BED982500A59916 /* VariousAPIList */ = {
 			isa = PBXGroup;
 			children = (
+				CE6CB1A62BFCC38300B63F72 /* APIClient.swift */,
 				8C4C06E82BED9F6D00A59916 /* VariousAPIListApp.swift */,
 				8C4C06E52BED987A00A59916 /* Entity */,
 				8C4C06DA2BED983E00A59916 /* View */,
@@ -288,6 +291,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8C4C06E72BED987A00A59916 /* Photo.swift in Sources */,
+				CE6CB1A72BFCC38300B63F72 /* APIClient.swift in Sources */,
 				8C4C06DF2BED986000A59916 /* PhotoListPageView.swift in Sources */,
 				8C4C06E02BED986000A59916 /* TopPageView.swift in Sources */,
 				8C4C06E92BED9F6D00A59916 /* VariousAPIListApp.swift in Sources */,

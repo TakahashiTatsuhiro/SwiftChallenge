@@ -21,13 +21,20 @@ extension PhotoListPageView {
         @Published var photoList: PhotoList = []
         
         init() {
-            fetchPhoto { _returnVal, _error in
+//            fetchPhoto { _returnVal, _error in
+//                if let returnVal = _returnVal {
+//                    self.photoList = returnVal
+//                } else if let error = _error {
+//                    print(error)
+//                }
+//            }
+            fetchPhotoAPIClient(completion: { _returnVal, _error in
                 if let returnVal = _returnVal {
                     self.photoList = returnVal
                 } else if let error = _error {
                     print(error)
                 }
-            }
+            })
         }
         
         func fetchPhoto(completion: @escaping (PhotoList?, Error?) -> Void) {
@@ -47,8 +54,18 @@ extension PhotoListPageView {
                     }
                 }
             }
-            
             task.resume()
+        }
+        
+        func fetchPhotoAPIClient(completion: @escaping (PhotoList?, Error?) -> Void) {
+            let getPhotoRequest = GetPhotosRequest(
+                method: HttpMethod.GET,
+                parameters: ["albumId":"1"]
+            )
+            let apiClient = APIClientImpl()
+            apiClient.executeWithCompletion (
+                getPhotoRequest,
+                completion: completion)
         }
     }
 }
@@ -58,8 +75,8 @@ struct PhotoView : View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            AsyncImage(url: photo.url){ image in
-                image.resizable()
+            AsyncImage(url: photo.thumbnailUrl){ image in
+                image.resizable().frame(width: 50, height: 50)
             } placeholder: {
                 ProgressView()
             }
