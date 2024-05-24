@@ -10,41 +10,20 @@ struct PhotoListPageView: View {
                 Divider()
             }
         }
+        .onAppear() {
+            Task {
+                try await viewModel.onAppear()
+            }
+        }
     }
 }
-
-typealias PhotoList = [Photo]
 
 extension PhotoListPageView {
     
     class PhotoViewModel: ObservableObject {
-        @Published var photoList: PhotoList = []
-        
-        init() {
-            // --------------------------------------------------
-//            fetchPhoto { _returnVal, _error in
-//                if let returnVal = _returnVal {
-//                    self.photoList = returnVal
-//                } else if let error = _error {
-//                    print(error)
-//                }
-//            }
-            
-            // --------------------------------------------------
-//            fetchPhotoAPIClient_withComp(completion: { _returnVal, _error in
-//                if let returnVal = _returnVal {
-//                    self.photoList = returnVal
-//                } else if let error = _error {
-//                    print(error)
-//                }
-//            })
-            
-            // --------------------------------------------------
-//            Task {
-//                self.photoList = try await fetchPhotoAPIClient_withAsyncThrows()
-//            }
-            
-            // --------------------------------------------------
+        @Published var photoList: [Photo] = []
+                
+        func onAppear() async throws {
             Task {
                 let response = await fetchPhotoAPIClient_withAsyncResult()
                 switch response {
@@ -54,10 +33,9 @@ extension PhotoListPageView {
                     throw error
                 }
             }
-            
         }
         
-        func fetchPhoto(completion: @escaping (PhotoList?, Error?) -> Void) {
+        func fetchPhoto(completion: @escaping ([Photo]?, Error?) -> Void) {
             //参考 https://zenn.dev/masakatsu_tagi/articles/f5374dd3153bdc
             
             let requestUrl = URL(string: "https://jsonplaceholder.typicode.com/photos?albumId=1")!
@@ -67,7 +45,7 @@ extension PhotoListPageView {
                 } else if let data = data {
                     let decoder = JSONDecoder()
                     do {
-                        let decoded = try decoder.decode(PhotoList.self, from: data)
+                        let decoded = try decoder.decode([Photo].self, from: data)
                         completion(decoded, nil)
                     } catch {
                         print("error")
@@ -77,9 +55,8 @@ extension PhotoListPageView {
             task.resume()
         }
         
-        func fetchPhotoAPIClient_withComp(completion: @escaping (PhotoList?, Error?) -> Void) {
+        func fetchPhotoAPIClient_withComp(completion: @escaping ([Photo]?, Error?) -> Void) {
             let getPhotoRequest = GetPhotosRequest(
-                method: HttpMethod.GET,
                 parameters: ["albumId":"1"]
             )
             let apiClient = APIClientImpl()
@@ -90,7 +67,6 @@ extension PhotoListPageView {
         
         func fetchPhotoAPIClient_withAsyncThrows() async throws -> GetPhotosRequest.ResponseType {
             let getPhotoRequest = GetPhotosRequest(
-                method: HttpMethod.GET,
                 parameters: ["albumId" : "1"]
             )
             let apiClient = APIClientImpl()
@@ -100,7 +76,6 @@ extension PhotoListPageView {
         
         func fetchPhotoAPIClient_withAsyncResult() async -> Result<GetPhotosRequest.ResponseType, any Error> {
             let getPhotoRequest = GetPhotosRequest(
-                method: HttpMethod.GET,
                 parameters: ["albumId":"1"]
             )
             let apiClient = APIClientImpl()

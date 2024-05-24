@@ -17,7 +17,7 @@ protocol APIRequest {
 struct GetAlbumsRequest: APIRequest {
     typealias ResponseType = [Album]
     var endpoint = "/albums"
-    var method: HttpMethod
+    var method: HttpMethod = .GET
     var headers: [String : String] = [String:String]()
     var baseURL: URL? = URL(string: "https://jsonplaceholder.typicode.com")
     var parameters: [String : String] = [String:String]()
@@ -55,15 +55,18 @@ class APIClientImpl: APIClient {
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 completion(nil, error)
-            } else if let data = data {
-                let decoder = JSONDecoder()
-                do {
-                    let decoded = try decoder.decode(T.ResponseType.self, from: data)
-                    completion(decoded, nil)
-                } catch {
-                    completion(nil, error)
-                }
+                return
             }
+            guard let httpResponse = response as? HTTPURLResponse,
+                  httpResponse.statusCode >= 200,
+                  httpResponse.statusCode < 300,
+                  let data = data,
+                  let json = try? JSONDecoder().decode(T.ResponseType.self, from: data)
+            else {
+                completion(nil, URLError(.badServerResponse))
+                return
+            }
+            completion(json, nil)
         }
         task.resume()
     }
@@ -73,7 +76,6 @@ class APIClientImpl: APIClient {
 //    }
     
     func executeWithAsyncThrows<T>(_ request: T) async throws -> T.ResponseType where T : APIRequest {
-        // https://qiita.com/imchino/items/615ef4baf683cfd91d3b
         var urlComponent = URLComponents(url: request.baseURL!, resolvingAgainstBaseURL: true)!
         urlComponent.path = request.endpoint
         urlComponent.queryItems = request.parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
@@ -82,12 +84,17 @@ class APIClientImpl: APIClient {
             throw URLError(.badURL)
         }
 
-        // https://qiita.com/kamomeKUN/items/a68ca0d7f65565010b06
-        let (data, urlResponse) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await URLSession.shared.data(from: url)
         
-        let decoder = JSONDecoder()
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode >= 200,
+              httpResponse.statusCode < 300
+        else {
+            throw URLError(.badServerResponse)
+        }
+        
         do {
-            let decoded = try decoder.decode(T.ResponseType.self, from: data)
+            let decoded = try JSONDecoder().decode(T.ResponseType.self, from: data)
             return decoded
         } catch {
             throw error
@@ -105,9 +112,14 @@ class APIClientImpl: APIClient {
         }
 
         do {
-            let (data, urlResponse) = try await URLSession.shared.data(from: url)
-            let decoder = JSONDecoder()
-            let decoded = try decoder.decode(T.ResponseType.self, from: data)
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  httpResponse.statusCode >= 200,
+                  httpResponse.statusCode < 300
+            else {
+                return Result.failure(URLError(.badServerResponse))
+            }
+            let decoded = try JSONDecoder().decode(T.ResponseType.self, from: data)
             return Result.success(decoded)
         } catch {
             return Result.failure(error)

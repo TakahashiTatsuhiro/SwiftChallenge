@@ -10,53 +10,30 @@ struct AlbumListPageView: View {
                 Divider()
             }
         }
+        .onAppear() {
+            Task {
+                try await viewModel.onAppear()
+            }
+        }
     }
 }
-
-typealias AlbumList = [Album]
 
 extension AlbumListPageView {
     
     class AlbumViewModel: ObservableObject {
-        @Published var albumList: AlbumList = []
+        @Published var albumList: [Album] = []
         
-        init() {
-            // --------------------------------------------------
-//            fetchAlbum { _returnVal, _error in
-//                if let returnVal = _returnVal {
-//                    self.albumList = returnVal
-//                } else if let error = _error {
-//                    print(error)
-//                }
-//            }
-            
-            // --------------------------------------------------
-//            fetchAlbumAPIClient_withComp(completion: { _returnVal, _error in
-//                if let returnVal = _returnVal {
-//                    self.albumList = returnVal
-//                } else if let error = _error {
-//                    print(error)
-//                }
-//            })
-            
-//            Task {
-//                self.albumList = try await fetchAlbumAPIClient_withAsyncThrows()
-//            }
-            
-            // --------------------------------------------------
-            Task {
-                let response = await fetchAlbumAPIClient_withAsyncResult()
-                switch response {
-                case .success(let result):
-                    self.albumList = result
-                case .failure(let error):
-                    throw error
-                }
+        func onAppear() async throws {
+            let response = await fetchAlbumAPIClient_withAsyncResult()
+            switch response {
+            case .success(let result):
+                self.albumList = result
+            case .failure(let error):
+                throw error
             }
-            
         }
         
-        func fetchAlbum(completion: @escaping (AlbumList?, Error?) -> Void) {
+        func fetchAlbum(completion: @escaping ([Album]?, Error?) -> Void) {
             //参考 https://zenn.dev/masakatsu_tagi/articles/f5374dd3153bdc
             
             let requestUrl = URL(string: "https://jsonplaceholder.typicode.com/albums")!
@@ -67,7 +44,7 @@ extension AlbumListPageView {
                 } else if let data = data {
                     let decoder = JSONDecoder()
                     do {
-                        let decoded = try decoder.decode(AlbumList.self, from: data)
+                        let decoded = try decoder.decode([Album].self, from: data)
                         completion(decoded, nil)
                     } catch {
                         print("error")
@@ -77,21 +54,21 @@ extension AlbumListPageView {
             task.resume()
         }
         
-        func fetchAlbumAPIClient_withComp(completion: @escaping (AlbumList?, Error?) -> Void) {
-            let getAlbumRequest = GetAlbumsRequest(method: HttpMethod.GET)
+        func fetchAlbumAPIClient_withComp(completion: @escaping ([Album]?, Error?) -> Void) {
+            let getAlbumRequest = GetAlbumsRequest()
             let apiClient = APIClientImpl()
             apiClient.executeWithCompletion(getAlbumRequest, completion: completion)
         }
         
         func fetchAlbumAPIClient_withAsyncThrows() async throws -> GetAlbumsRequest.ResponseType {
-            let getAlbumRequest =  GetAlbumsRequest(method: HttpMethod.GET)
+            let getAlbumRequest =  GetAlbumsRequest()
             let apiClient = APIClientImpl()
             let response = try await apiClient.executeWithAsyncThrows(getAlbumRequest)
             return response
         }
         
         func fetchAlbumAPIClient_withAsyncResult() async -> Result<GetAlbumsRequest.ResponseType, any Error> {
-            let getAlbumRequest = GetAlbumsRequest(method: HttpMethod.GET)
+            let getAlbumRequest = GetAlbumsRequest()
             let apiClient = APIClientImpl()
             let response = await apiClient.executeWithAsyncResult(getAlbumRequest)
             
