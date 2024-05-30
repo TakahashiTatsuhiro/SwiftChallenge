@@ -34,7 +34,7 @@ struct GetPhotosRequest: APIRequest {
 
 protocol APIClient {
     func executeWithCompletion<T: APIRequest>(_ request: T, completion: @escaping (T.ResponseType?, Error?) -> Void)
-//    func executeWithFuture<T: APIRequest>(_ request: T) -> Future<T.ResponseType, Error>
+    func executeWithFuture<T: APIRequest>(_ request: T) -> Future<T.ResponseType, Error>
     func executeWithAsyncThrows<T: APIRequest>(_ request: T) async throws -> T.ResponseType
     func executeWithAsyncResult<T: APIRequest>(_ request: T) async -> Result<T.ResponseType, Error>
 }
@@ -71,9 +71,42 @@ class APIClientImpl: APIClient {
         task.resume()
     }
     
-//    func executeWithFuture<T>(_ request: T) -> Future<T.ResponseType, any Error> where T : APIRequest {
-//        
-//    }
+    func executeWithFuture<T: APIRequest>(_ request: T) -> Future<T.ResponseType, Error> {
+        // https://tech.stmn.co.jp/entry/2023/07/03/163842
+        return Future { promise in
+            var urlComponent = URLComponents(url: request.baseURL!, resolvingAgainstBaseURL: true)!
+            urlComponent.path = request.endpoint
+            urlComponent.queryItems = request.parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
+
+            guard let url = urlComponent.url else {
+                promise(.failure(URLError(.badURL)))
+                return
+            }
+
+            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                if let error = error {
+                    promise(.failure(error))
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse,
+                      httpResponse.statusCode >= 200,
+                      httpResponse.statusCode < 300,
+                      let data = data else {
+                    promise(.failure(URLError(.badServerResponse)))
+                    return
+                }
+
+                do {
+                    let decoded = try JSONDecoder().decode(T.ResponseType.self, from: data)
+                    promise(.success(decoded))
+                } catch {
+                    promise(.failure(error))
+                }
+            }
+            task.resume()
+        }
+    }
     
     func executeWithAsyncThrows<T>(_ request: T) async throws -> T.ResponseType where T : APIRequest {
         var urlComponent = URLComponents(url: request.baseURL!, resolvingAgainstBaseURL: true)!
