@@ -39,7 +39,9 @@ protocol APIClient {
     func executeWithAsyncResult<T: APIRequest>(_ request: T) async -> Result<T.ResponseType, Error>
 }
 
+
 class APIClientImpl: APIClient {
+
     func executeWithCompletion<T>(_ request: T, completion: @escaping (T.ResponseType?, (any Error)?) -> Void) where T: APIRequest {
         
         // https://qiita.com/imchino/items/615ef4baf683cfd91d3b
@@ -126,12 +128,12 @@ class APIClientImpl: APIClient {
             throw URLError(.badServerResponse)
         }
         
-        do {
+//        do {
             let decoded = try JSONDecoder().decode(T.ResponseType.self, from: data)
             return decoded
-        } catch {
-            throw error
-        }
+//        } catch {
+//            throw error
+//        }
     }
     
     func executeWithAsyncResult<T>(_ request: T) async -> Result<T.ResponseType, any Error> where T : APIRequest {
@@ -158,4 +160,91 @@ class APIClientImpl: APIClient {
             return Result.failure(error)
         }
     }
+}
+
+
+class APIClientKentaro: APIClient {
+    let defaultBaseURL: URL
+    private var cancellables = Set<AnyCancellable>()
+    
+    init(defaultBaseURL: URL) {
+        self.defaultBaseURL = defaultBaseURL
+    }
+    
+    private func makeURL(with request: any APIRequest) -> URL {
+        var urlComponent = URLComponents()
+        if let baseURL = request.baseURL {
+            urlComponent = URLComponents(url: baseURL, resolvingAgainstBaseURL: true)!
+        } else {
+            urlComponent = URLComponents(url: defaultBaseURL, resolvingAgainstBaseURL: true)!
+        }
+        urlComponent.path = request.endpoint
+        
+        var queryItems: [URLQueryItem] = []
+        for param in request.parameters {
+            queryItems.append(
+                URLQueryItem(name: param.key, value: param.value)
+            )
+        }
+        urlComponent.queryItems = queryItems
+        
+        return urlComponent.url!
+    }
+    
+    private func makeURLRequest(with request: any APIRequest) -> URLRequest {
+        let url = makeURL(with: request)
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = request.method.rawValue
+        urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        return urlRequest
+    }
+    
+    func executeWithFutureKentaro<T>(_ request: T) -> Future<T.ResponseType, Error> where T: APIRequest {
+        let urlRequest = makeURLRequest(with: request)
+        return Future { promise in
+            URLSession.shared.dataTaskPublisher(for: urlRequest)
+                .tryMap { data, response in
+                    guard let httpResponse = response as? HTTPURLResponse,
+                          httpResponse.statusCode >= 200,
+                          httpResponse.statusCode < 300
+                    else {
+                        throw URLError(.badServerResponse)
+                    }
+                    return data
+                }
+                .decode(type: T.ResponseType.self, decoder: JSONDecoder())
+                .sink { completion in
+                    switch completion {
+                    case .finished:
+                        break
+                    case .failure(let error):
+                        promise(.failure(error))
+                    }
+                } receiveValue: { json in
+                    promise(.success(json))
+                }
+                .store(in: &self.cancellables)
+        }
+    }
+
+    
+    func executeWithCompletion<T>(_ request: T, completion: @escaping (T.ResponseType?, (any Error)?) -> Void) where T : APIRequest {
+        
+    }
+    
+    func executeWithFuture<T>(_ request: T) -> Future<T.ResponseType, any Error> where T : APIRequest {
+        return Future { promise in
+            return promise(.failure(NSError()))
+        }
+    }
+    
+    func executeWithAsyncThrows<T>(_ request: T) async throws -> T.ResponseType where T : APIRequest {
+        throw NSError()
+    }
+    
+    func executeWithAsyncResult<T>(_ request: T) async -> Result<T.ResponseType, any Error> where T : APIRequest {
+        return .failure(NSError())
+    }
+    
 }
