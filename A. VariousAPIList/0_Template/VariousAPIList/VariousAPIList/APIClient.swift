@@ -14,20 +14,47 @@ protocol APIClient {
 }
 
 
-
 class APIClientImpl: APIClient {
-    func executeWithCompletion<T>(_ request: T, completion: @escaping (T.ResponseType?, (any Error)?) -> Void) where T: APIRequest {
-        // https://qiita.com/imchino/items/615ef4baf683cfd91d3b
-        var urlComponent = URLComponents(url: request.baseURL!, resolvingAgainstBaseURL: true)!
-        urlComponent.path = request.endpoint
-        urlComponent.queryItems = request.parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
-        
-        guard let url = urlComponent.url else {
-            completion(nil, URLError(.badURL))
-            return
+    let defaultBaseURL: URL
+    private var cancellables = Set<AnyCancellable>()
+    
+    init(defaultBaseURL: URL) {
+        self.defaultBaseURL = defaultBaseURL
+    }
+    
+    private func makeURL(with request: any APIRequest) -> URL {
+        var urlComponent = URLComponents()
+        if let baseURL = request.baseURL {
+            urlComponent = URLComponents(url: baseURL, resolvingAgainstBaseURL: true)!
+        } else {
+            urlComponent = URLComponents(url: defaultBaseURL, resolvingAgainstBaseURL: true)!
         }
-
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+        urlComponent.path = request.endpoint
+        
+        var queryItems: [URLQueryItem] = []
+        for param in request.parameters {
+            queryItems.append(
+                URLQueryItem(name: param.key, value: param.value)
+            )
+        }
+        urlComponent.queryItems = queryItems
+        
+        return urlComponent.url!
+    }
+    
+    private func makeURLRequest(with request: any APIRequest) -> URLRequest {
+        let url = makeURL(with: request)
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = request.method.rawValue
+        urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        return urlRequest
+    }
+    
+    func executeWithCompletion<T>(_ request: T, completion: @escaping (T.ResponseType?, (any Error)?) -> Void) where T: APIRequest {
+        let urlRequest = makeURLRequest(with: request)
+        
+        let task = URLSession.shared.dataTask(with: urlRequest) { data, response, error in
             if let error = error {
                 completion(nil, error)
                 return
@@ -49,16 +76,8 @@ class APIClientImpl: APIClient {
     func executeWithFuture<T: APIRequest>(_ request: T) -> Future<T.ResponseType, Error> {
         // https://tech.stmn.co.jp/entry/2023/07/03/163842
         return Future { promise in
-            var urlComponent = URLComponents(url: request.baseURL!, resolvingAgainstBaseURL: true)!
-            urlComponent.path = request.endpoint
-            urlComponent.queryItems = request.parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
-
-            guard let url = urlComponent.url else {
-                promise(.failure(URLError(.badURL)))
-                return
-            }
-
-            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            let urlRequest = self.makeURLRequest(with: request)
+            let task = URLSession.shared.dataTask(with: urlRequest) { data, response, error in
                 if let error = error {
                     promise(.failure(error))
                     return
@@ -84,15 +103,8 @@ class APIClientImpl: APIClient {
     }
     
     func executeWithAsyncThrows<T>(_ request: T) async throws -> T.ResponseType where T : APIRequest {
-        var urlComponent = URLComponents(url: request.baseURL!, resolvingAgainstBaseURL: true)!
-        urlComponent.path = request.endpoint
-        urlComponent.queryItems = request.parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
-        
-        guard let url = urlComponent.url else {
-            throw URLError(.badURL)
-        }
-
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let urlRequest = makeURLRequest(with: request)
+        let (data, response) = try await URLSession.shared.data(from: urlRequest.url!)
         
         guard let httpResponse = response as? HTTPURLResponse,
               httpResponse.statusCode >= 200,
@@ -110,17 +122,9 @@ class APIClientImpl: APIClient {
     }
     
     func executeWithAsyncResult<T>(_ request: T) async -> Result<T.ResponseType, any Error> where T : APIRequest {
-        // https://qiita.com/imchino/items/615ef4baf683cfd91d3b
-        var urlComponent = URLComponents(url: request.baseURL!, resolvingAgainstBaseURL: true)!
-        urlComponent.path = request.endpoint
-        urlComponent.queryItems = request.parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
-        
-        guard let url = urlComponent.url else {
-            return Result.failure(URLError(.badURL))
-        }
-
+        let urlRequest = makeURLRequest(with: request)
         do {
-            let (data, response) = try await URLSession.shared.data(from: url)
+            let (data, response) = try await URLSession.shared.data(from: urlRequest.url!)
             guard let httpResponse = response as? HTTPURLResponse,
                   httpResponse.statusCode >= 200,
                   httpResponse.statusCode < 300

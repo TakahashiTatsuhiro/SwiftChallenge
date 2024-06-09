@@ -63,7 +63,7 @@ extension PhotoListPageView {
             let getPhotoRequest = GetPhotosRequest(
                 parameters: ["albumId":"1"]
             )
-            let apiClient = APIClientImpl()
+            let apiClient = APIClientImpl(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
             apiClient.executeWithCompletion (
                 getPhotoRequest,
                 completion: completion)
@@ -73,7 +73,7 @@ extension PhotoListPageView {
             let getPhotoRequest = GetPhotosRequest(
                 parameters: ["albumId":"1"]
             )
-            let apiClient = APIClientImpl()
+            let apiClient = APIClientImpl(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
             return apiClient.executeWithFuture(getPhotoRequest)
         }
         
@@ -81,7 +81,7 @@ extension PhotoListPageView {
             let getPhotoRequest = GetPhotosRequest(
                 parameters: ["albumId" : "1"]
             )
-            let apiClient = APIClientImpl()
+            let apiClient = APIClientImpl(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
             let response = try await apiClient.executeWithAsyncThrows(getPhotoRequest)
             return response
         }
@@ -90,7 +90,7 @@ extension PhotoListPageView {
             let getPhotoRequest = GetPhotosRequest(
                 parameters: ["albumId":"1"]
             )
-            let apiClient = APIClientImpl()
+            let apiClient = APIClientImpl(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
             let response = await apiClient.executeWithAsyncResult(getPhotoRequest)
             
             switch response {

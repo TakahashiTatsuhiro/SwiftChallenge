@@ -19,6 +19,7 @@
 		8C4C06E72BED987A00A59916 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C4C06E42BED987A00A59916 /* Photo.swift */; };
 		8C4C06E92BED9F6D00A59916 /* VariousAPIListApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C4C06E82BED9F6D00A59916 /* VariousAPIListApp.swift */; };
 		CE5FBC272C127D4A0089E62D /* APIRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5FBC262C127D4A0089E62D /* APIRequest.swift */; };
+		CE5FBC292C12A37B0089E62D /* MyURLSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5FBC282C12A37B0089E62D /* MyURLSession.swift */; };
 		CE6CB1A72BFCC38300B63F72 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE6CB1A62BFCC38300B63F72 /* APIClient.swift */; };
 /* End PBXBuildFile section */
 
@@ -56,6 +57,7 @@
 		8C4C06E42BED987A00A59916 /* Photo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		8C4C06E82BED9F6D00A59916 /* VariousAPIListApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariousAPIListApp.swift; sourceTree = "<group>"; };
 		CE5FBC262C127D4A0089E62D /* APIRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIRequest.swift; sourceTree = "<group>"; };
+		CE5FBC282C12A37B0089E62D /* MyURLSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyURLSession.swift; sourceTree = "<group>"; };
 		CE6CB1A62BFCC38300B63F72 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -115,6 +117,7 @@
 				8C4C06B32BED982700A59916 /* Assets.xcassets */,
 				8C4C06B52BED982700A59916 /* VariousAPIList.entitlements */,
 				8C4C06B62BED982700A59916 /* Preview Content */,
+				CE5FBC282C12A37B0089E62D /* MyURLSession.swift */,
 			);
 			path = VariousAPIList;
 			sourceTree = "<group>";
@@ -298,6 +301,7 @@
 				8C4C06DF2BED986000A59916 /* PhotoListPageView.swift in Sources */,
 				8C4C06E02BED986000A59916 /* TopPageView.swift in Sources */,
 				8C4C06E92BED9F6D00A59916 /* VariousAPIListApp.swift in Sources */,
+				CE5FBC292C12A37B0089E62D /* MyURLSession.swift in Sources */,
 				8C4C06DE2BED986000A59916 /* AlbumListPageView.swift in Sources */,
 				CE5FBC272C127D4A0089E62D /* APIRequest.swift in Sources */,
 				8C4C06E62BED987A00A59916 /* Album.swift in Sources */,

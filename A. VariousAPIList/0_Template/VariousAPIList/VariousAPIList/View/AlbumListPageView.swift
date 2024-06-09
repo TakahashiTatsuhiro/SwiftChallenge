@@ -63,26 +63,26 @@ extension AlbumListPageView {
         
         func fetchAlbumAPIClientWithFuture() -> Future<GetAlbumsRequest.ResponseType, Error> {
             let getAlbumRequest = GetAlbumsRequest()
-            let apiClient = APIClientImpl()
+            let apiClient = APIClientImpl(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
             return apiClient.executeWithFuture(getAlbumRequest)
         }
         
         func fetchAlbumAPIClientWithComp(completion: @escaping ([Album]?, Error?) -> Void) {
             let getAlbumRequest = GetAlbumsRequest()
-            let apiClient = APIClientImpl()
+            let apiClient = APIClientImpl(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
             apiClient.executeWithCompletion(getAlbumRequest, completion: completion)
         }
         
         func fetchAlbumAPIClientWithAsyncThrows() async throws -> GetAlbumsRequest.ResponseType {
             let getAlbumRequest =  GetAlbumsRequest()
-            let apiClient = APIClientImpl()
+            let apiClient = APIClientImpl(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
             let response = try await apiClient.executeWithAsyncThrows(getAlbumRequest)
             return response
         }
         
         func fetchAlbumAPIClientWithAsyncResult() async -> Result<GetAlbumsRequest.ResponseType, any Error> {
             let getAlbumRequest = GetAlbumsRequest()
-            let apiClient = APIClientImpl()
+            let apiClient = APIClientImpl(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
             let response = await apiClient.executeWithAsyncResult(getAlbumRequest)
             
             switch response {
