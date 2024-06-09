@@ -25,7 +25,7 @@ extension PhotoListPageView {
                 
         func onAppear() {
             // https://www.bravesoft.co.jp/blog/archives/15610
-            cancellable = fetchPhotoAPIClientWithFuture()
+            cancellable = fetchPhotoMyAPIClientWithFuture()
                 .sink(
                     receiveCompletion: {completion in
                         switch completion {
@@ -40,6 +40,7 @@ extension PhotoListPageView {
                     })
         }
         
+        // 問２
         func fetchPhoto(completion: @escaping ([Photo]?, Error?) -> Void) {
             //参考 https://zenn.dev/masakatsu_tagi/articles/f5374dd3153bdc
             let requestUrl = URL(string: "https://jsonplaceholder.typicode.com/photos?albumId=1")!
@@ -59,6 +60,7 @@ extension PhotoListPageView {
             task.resume()
         }
         
+        // 問３
         func fetchPhotoAPIClientWithComp(completion: @escaping ([Photo]?, Error?) -> Void) {
             let getPhotoRequest = GetPhotosRequest(
                 parameters: ["albumId":"1"]
@@ -100,6 +102,50 @@ extension PhotoListPageView {
                 return Result.failure(error)
             }
         }
+        
+        // 問５、６
+        func fetchPhotoMyAPIClientWithComp(completion: @escaping ([Photo]?, Error?) -> Void) {
+            let getPhotoRequest = GetPhotosRequest(
+                parameters: ["albumId":"1"]
+            )
+            let apiClient = MyAPIClient(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
+            apiClient.executeWithCompletion (
+                getPhotoRequest,
+                completion: completion)
+        }
+        
+        func fetchPhotoMyAPIClientWithFuture() -> Future<GetPhotosRequest.ResponseType, Error> {
+            let getPhotoRequest = GetPhotosRequest(
+                parameters: ["albumId":"1"]
+            )
+            let apiClient = MyAPIClient(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
+            return apiClient.executeWithFuture(getPhotoRequest)
+        }
+        
+        func fetchPhotoMyAPIClientWithAsyncThrows() async throws -> GetPhotosRequest.ResponseType {
+            let getPhotoRequest = GetPhotosRequest(
+                parameters: ["albumId" : "1"]
+            )
+            let apiClient = MyAPIClient(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
+            let response = try await apiClient.executeWithAsyncThrows(getPhotoRequest)
+            return response
+        }
+        
+        func fetchPhotoMyAPIClientWithAsyncResult() async -> Result<GetPhotosRequest.ResponseType, any Error> {
+            let getPhotoRequest = GetPhotosRequest(
+                parameters: ["albumId":"1"]
+            )
+            let apiClient = MyAPIClient(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
+            let response = await apiClient.executeWithAsyncResult(getPhotoRequest)
+            
+            switch response {
+            case .success(let result):
+                return Result.success(result)
+            case .failure(let error):
+                return Result.failure(error)
+            }
+        }
+        
     }
 }
 

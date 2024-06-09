@@ -25,7 +25,7 @@ extension AlbumListPageView {
         
         func onAppear() {
             // https://www.bravesoft.co.jp/blog/archives/15610
-            cancellable = fetchAlbumAPIClientWithFuture()
+            cancellable = fetchAlbumMyAPIClientWithFuture()
                 .sink(
                     receiveCompletion: { completion in
                         switch completion {
@@ -41,6 +41,7 @@ extension AlbumListPageView {
                 )
         }
         
+        // 問２
         func fetchAlbum(completion: @escaping ([Album]?, Error?) -> Void) {
             //参考 https://zenn.dev/masakatsu_tagi/articles/f5374dd3153bdc
             let requestUrl = URL(string: "https://jsonplaceholder.typicode.com/albums")!
@@ -61,16 +62,17 @@ extension AlbumListPageView {
             task.resume()
         }
         
-        func fetchAlbumAPIClientWithFuture() -> Future<GetAlbumsRequest.ResponseType, Error> {
-            let getAlbumRequest = GetAlbumsRequest()
-            let apiClient = APIClientImpl(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
-            return apiClient.executeWithFuture(getAlbumRequest)
-        }
-        
+        // 問３
         func fetchAlbumAPIClientWithComp(completion: @escaping ([Album]?, Error?) -> Void) {
             let getAlbumRequest = GetAlbumsRequest()
             let apiClient = APIClientImpl(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
             apiClient.executeWithCompletion(getAlbumRequest, completion: completion)
+        }
+        
+        func fetchAlbumAPIClientWithFuture() -> Future<GetAlbumsRequest.ResponseType, Error> {
+            let getAlbumRequest = GetAlbumsRequest()
+            let apiClient = APIClientImpl(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
+            return apiClient.executeWithFuture(getAlbumRequest)
         }
         
         func fetchAlbumAPIClientWithAsyncThrows() async throws -> GetAlbumsRequest.ResponseType {
@@ -84,6 +86,39 @@ extension AlbumListPageView {
             let getAlbumRequest = GetAlbumsRequest()
             let apiClient = APIClientImpl(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
             let response = await apiClient.executeWithAsyncResult(getAlbumRequest)
+            
+            switch response {
+            case .success(let result):
+                return Result.success(result)
+            case .failure(let error):
+                return Result.failure(error)
+            }
+        }
+        
+        // 問５、６
+        func fetchAlbumMyAPIClientWithComp(completion: @escaping ([Album]?, Error?) -> Void) {
+            let getAlbumRequest = GetAlbumsRequest()
+            let myAPIClient = MyAPIClient(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
+            myAPIClient.executeWithCompletion(getAlbumRequest, completion: completion)
+        }
+        
+        func fetchAlbumMyAPIClientWithFuture() -> Future<GetAlbumsRequest.ResponseType, Error> {
+            let getAlbumRequest = GetAlbumsRequest()
+            let myAPIClient = MyAPIClient(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
+            return myAPIClient.executeWithFuture(getAlbumRequest)
+        }
+        
+        func fetchAlbumMyAPIClientWithAsyncThrows() async throws -> GetAlbumsRequest.ResponseType {
+            let getAlbumRequest =  GetAlbumsRequest()
+            let myAPIClient = MyAPIClient(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
+            let response = try await myAPIClient.executeWithAsyncThrows(getAlbumRequest)
+            return response
+        }
+        
+        func fetchAlbumAMyPIClientWithAsyncResult() async -> Result<GetAlbumsRequest.ResponseType, any Error> {
+            let getAlbumRequest = GetAlbumsRequest()
+            let myAPIClient = MyAPIClient(defaultBaseURL: URL(string: "https://jsonplaceholder.typicode.com")!)
+            let response = await myAPIClient.executeWithAsyncResult(getAlbumRequest)
             
             switch response {
             case .success(let result):
